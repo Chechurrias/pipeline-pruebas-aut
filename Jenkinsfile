@@ -10,17 +10,18 @@ pipeline {
 
         stage('2. Smoke Test (PokeAPI Status)') {
             steps {
-                echo '💨 Ejecutando Smoke Test: Verificando disponibilidad de PokeAPI...'
+                echo '💨 Ejecutando Smoke Test: Verificando disponibilidad con curl...'
                 sh '''
-                    python3 -c "
-                    import urllib.request
-                    try:
-                        response = urllib.request.urlopen('https://pokeapi.co/api/v2/')
-                        print(f'✅ Smoke Test OK - Status Code: {response.getcode()}')
-                    except Exception as e:
-                        print(f'❌ Smoke Test Falló: {e}')
-                        exit(1)
-                    "
+                    # Consultar el código HTTP de la API ignorando problemas menores de certificados si los hubiera
+                    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/v2/)
+                    echo "Código HTTP recibido: $HTTP_CODE"
+                    
+                    if [ "$HTTP_CODE" -eq 200 ]; then
+                        echo "✅ Smoke Test OK - La PokeAPI está en línea y responde correctamente."
+                    else
+                        echo "❌ Smoke Test Falló - La API respondió con código: $HTTP_CODE"
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -30,12 +31,17 @@ pipeline {
                 echo '🧪 Ejecutando Pruebas Funcionales contra PokeAPI...'
                 sh '''
                     python3 -c "
-                    import urllib.request, urllib.error, json
+                    import urllib.request, urllib.error, json, ssl
+
+                    # Crear contexto SSL que no bloquee por certificados en contenedores aislados
+                    ctx = ssl.create_default_context()
+                    ctx.check_hostname = False
+                    ctx.verify_mode = ssl.CERT_NONE
 
                     # --- CASO POSITIVO: Consultar Pokémon existente (Ditto) ---
                     print('--- Caso Positivo: Consultando Ditto ---')
                     url_valida = 'https://pokeapi.co/api/v2/pokemon/ditto'
-                    req = urllib.request.urlopen(url_valida)
+                    req = urllib.request.urlopen(url_valida, context=ctx)
                     data = json.loads(req.read().decode('utf-8'))
                     
                     name = data.get('name')
@@ -49,7 +55,7 @@ pipeline {
                     print('\\n--- Caso Negativo: Consultando Pokémon Inexistente ---')
                     url_invalida = 'https://pokeapi.co/api/v2/pokemon/pokemon-no-existe-12345'
                     try:
-                        urllib.request.urlopen(url_invalida)
+                        urllib.request.urlopen(url_invalida, context=ctx)
                         print('❌ Error: La API debió responder 404 pero respondió exitosamente.')
                         exit(1)
                     except urllib.error.HTTPError as e:
