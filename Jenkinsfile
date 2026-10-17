@@ -12,7 +12,6 @@ pipeline {
             steps {
                 echo '💨 Ejecutando Smoke Test: Verificando disponibilidad con curl...'
                 sh '''
-                    # Consultar el código HTTP de la API ignorando problemas menores de certificados si los hubiera
                     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/v2/)
                     echo "Código HTTP recibido: $HTTP_CODE"
                     
@@ -33,7 +32,6 @@ pipeline {
                     python3 -c "
                     import urllib.request, urllib.error, json, ssl
 
-                    # Crear contexto SSL que no bloquee por certificados en contenedores aislados
                     ctx = ssl.create_default_context()
                     ctx.check_hostname = False
                     ctx.verify_mode = ssl.CERT_NONE
