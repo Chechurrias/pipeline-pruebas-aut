@@ -44,7 +44,7 @@ pipeline {
                     # --- CASO NEGATIVO: Consultar Pokémon que NO existe ---
                     echo ""
                     echo "--- Caso Negativo: Consultando Pokémon Inexistente ---"
-                    HTTP_CODE_NEG=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/vv/pokemon/pokemon-no-existe-12345)
+                    HTTP_CODE_NEG=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/v2v/pokemon/pokemon-no-existe-12345)
                     echo "Código HTTP recibido para recurso inválido: $HTTP_CODE_NEG"
 
                     if [ "$HTTP_CODE_NEG" -eq 404 ]; then
