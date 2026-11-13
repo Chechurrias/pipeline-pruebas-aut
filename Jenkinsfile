@@ -12,7 +12,7 @@ pipeline {
             steps {
                 echo '💨 Ejecutando Smoke Test: Verificando disponibilidad con curl...'
                 sh '''
-                    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/vv/)
+                    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/v2/)
                     echo "Código HTTP recibido: $HTTP_CODE"
                     
                     if [ "$HTTP_CODE" -eq 200 ]; then
@@ -31,7 +31,7 @@ pipeline {
                 sh '''
                     # --- CASO POSITIVO: Consultar Pokémon existente (Ditto) ---
                     echo "--- Caso Positivo: Consultando Ditto ---"
-                    RESPONSE=$(curl -s https://pokeapi.co/api/v2/pokemon/ditto)
+                    RESPONSE=$(curl -s https://pokeapi.co/api/vv/pokemon/ditto)
                     
                     # Validar datos clave con grep de forma sencilla
                     if echo "$RESPONSE" | grep -q '"name":"ditto"' && echo "$RESPONSE" | grep -q '"id":132'; then
