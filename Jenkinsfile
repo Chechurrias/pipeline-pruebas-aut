@@ -12,7 +12,7 @@ pipeline {
             steps {
                 echo '💨 Ejecutando Smoke Test: Verificando disponibilidad con curl...'
                 sh '''
-                    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/v2/)
+                    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://pokeapi.co/api/VV/)
                     echo "Código HTTP recibido: $HTTP_CODE"
                     
                     if [ "$HTTP_CODE" -eq 200 ]; then
